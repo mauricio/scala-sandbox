@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 
 class Trie(var word: Option[String] = None) extends Traversable[String] {
 
-  private val children: mutable.Map[Char, Trie] = new java.util.TreeMap[Char, Trie]().asScala
+  private[trie] val children: mutable.Map[Char, Trie] = new java.util.TreeMap[Char, Trie]().asScala
 
   def append(key: String) = {
 
@@ -44,7 +44,7 @@ class Trie(var word: Option[String] = None) extends Traversable[String] {
       if (currentIndex == prefix.length) {
         items ++ node
       } else {
-        node.children.get(prefix.charAt(currentIndex)) match {
+        node.children.get(prefix.charAt(currentIndex).toLower) match {
           case Some(child) => helper(currentIndex + 1, child, items)
           case None => items
         }
@@ -56,6 +56,35 @@ class Trie(var word: Option[String] = None) extends Traversable[String] {
 
   def contains(word: String): Boolean =
     !findByPrefix(word).isEmpty
+
+  def remove(word : String) : Boolean = {
+
+    //def helper(node)
+
+    ???
+  }
+
+  private[trie] def pathTo( word : String ) : Option[ListBuffer[Trie]] = {
+
+    def helper(buffer : ListBuffer[Trie], currentIndex : Int, node : Trie) : Option[ListBuffer[Trie]] = {
+      if ( currentIndex == word.length && node.word.isDefined ) {
+        buffer += node
+        Some(buffer)
+      } else {
+        node.children.get(word.charAt(currentIndex).toLower) match {
+          case Some(found) => {
+            buffer += node
+            helper(buffer, currentIndex + 1, found)
+          }
+          case None => None
+        }
+      }
+    }
+
+    helper(new ListBuffer[Trie](), 0, this)
+  }
+
+  override def toString() : String = s"Trie(${word})"
 
 }
 

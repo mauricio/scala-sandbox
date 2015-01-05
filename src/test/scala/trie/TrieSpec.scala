@@ -35,6 +35,31 @@ class TrieSpec extends Specification {
       trie.findByPrefix("bos") must beEmpty
     }
 
+    "say that a word is contained" in {
+      val trie = new Trie()
+      trie.append("João Pessoa")
+
+      trie.contains("João Pessoa") must beTrue
+    }
+
+    "say that a word is not contained" in {
+      val trie = new Trie()
+      trie.append("João Pessoa")
+
+      trie.contains("João") must beFalse
+    }
+
+    "provide the path to a word" in {
+      val trie = new Trie()
+      trie.append("San Francisco")
+      trie.append("San Diego")
+
+      val list = trie.pathTo("San Diego").get
+      println(list)
+      list.length === 9
+      list(0).children.get('s').isDefined must beTrue
+    }
+
   }
 
 }
