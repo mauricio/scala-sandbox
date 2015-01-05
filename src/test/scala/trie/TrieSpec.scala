@@ -57,7 +57,6 @@ class TrieSpec extends Specification {
       trie.append(word)
 
       val list = trie.pathTo(word).get
-      println(list)
       list.length === 10
       (0 until 9).map {
         index =>
@@ -82,7 +81,7 @@ class TrieSpec extends Specification {
       trie.append("João")
       trie.append(name)
 
-      trie.remove(name)
+      trie.remove(name) must beTrue
 
       trie.contains(name) must beFalse
       trie.contains("João") must beTrue
@@ -95,10 +94,17 @@ class TrieSpec extends Specification {
       trie.append("João Pessoa")
       trie.append(name)
 
-      trie.remove(name)
+      trie.remove(name) must beTrue
 
       trie.contains(name) must beFalse
       trie.contains("João Pessoa") must beTrue
+    }
+
+    "does not remove if it does not exist" in {
+      val trie = new TrieNode()
+      trie.append("New York")
+
+      trie.remove("Berlin") must beFalse
     }
 
   }
