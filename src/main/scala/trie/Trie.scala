@@ -89,18 +89,24 @@ private[trie] class TrieNode(val char : Option[Char] = None, var word: Option[St
     pathTo(word) match {
       case Some(path) => {
         var index = path.length - 1
+        var continue = true
 
         path(index).word = None
 
-        while ( index > 0 ) {
+        while ( index > 0 && continue ) {
           val current = path(index)
-          val parent = path(index - 1)
 
-          if (current.children.isEmpty) {
-            parent.children.remove(word.charAt(index - 1).toLower)
+          if (current.word.isDefined) {
+            continue = false
+          } else {
+            val parent = path(index - 1)
+
+            if (current.children.isEmpty) {
+              parent.children.remove(word.charAt(index - 1).toLower)
+            }
+
+            index -= 1
           }
-
-          index -= 1
         }
 
         true

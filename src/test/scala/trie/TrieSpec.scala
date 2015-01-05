@@ -75,6 +75,32 @@ class TrieSpec extends Specification {
       trie.contains("San Antonio") must beTrue
     }
 
+    "remove a longer item" in {
+      val name = "João Pessoa"
+
+      val trie = new TrieNode()
+      trie.append("João")
+      trie.append(name)
+
+      trie.remove(name)
+
+      trie.contains(name) must beFalse
+      trie.contains("João") must beTrue
+    }
+
+    "remove a smaller item" in {
+      val name = "João"
+
+      val trie = new TrieNode()
+      trie.append("João Pessoa")
+      trie.append(name)
+
+      trie.remove(name)
+
+      trie.contains(name) must beFalse
+      trie.contains("João Pessoa") must beTrue
+    }
+
   }
 
 }
