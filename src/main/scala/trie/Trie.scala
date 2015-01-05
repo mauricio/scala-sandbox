@@ -5,18 +5,32 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class Trie(var word: Option[String] = None) extends Traversable[String] {
+object Trie {
+  def apply() : Trie = new TrieNode()
+}
 
-  private[trie] val children: mutable.Map[Char, Trie] = new java.util.TreeMap[Char, Trie]().asScala
+sealed trait Trie extends Traversable[String] {
 
-  def append(key: String) = {
+  def append(key : String)
+  def findByPrefix(prefix: String): scala.collection.Seq[String]
+  def contains(word: String): Boolean
+  def remove(word : String) : Boolean
 
-    @tailrec def appendHelper(node: Trie, currentIndex: Int): Unit = {
+}
+
+private[trie] class TrieNode(val char : Option[Char] = None, var word: Option[String] = None) extends Trie {
+
+  private[trie] val children: mutable.Map[Char, TrieNode] = new java.util.TreeMap[Char, TrieNode]().asScala
+
+  override def append(key: String) = {
+
+    @tailrec def appendHelper(node: TrieNode, currentIndex: Int): Unit = {
       if (currentIndex == key.length) {
         node.word = Some(key)
       } else {
-        val result = node.children.getOrElseUpdate(key.charAt(currentIndex).toLower, {
-          new Trie()
+        val char = key.charAt(currentIndex).toLower
+        val result = node.children.getOrElseUpdate(char, {
+          new TrieNode(Some(char))
         })
 
         appendHelper(result, currentIndex + 1)
@@ -28,7 +42,7 @@ class Trie(var word: Option[String] = None) extends Traversable[String] {
 
   override def foreach[U](f: String => U): Unit = {
 
-    @tailrec def foreachHelper(nodes: Trie*): Unit = {
+    @tailrec def foreachHelper(nodes: TrieNode*): Unit = {
       if (nodes.size != 0) {
         nodes.foreach(node => node.word.foreach(f))
         foreachHelper(nodes.flatMap(node => node.children.values): _*)
@@ -38,9 +52,9 @@ class Trie(var word: Option[String] = None) extends Traversable[String] {
     foreachHelper(this)
   }
 
-  def findByPrefix(prefix: String): scala.collection.Seq[String] = {
+  override def findByPrefix(prefix: String): scala.collection.Seq[String] = {
 
-    @tailrec def helper(currentIndex: Int, node: Trie, items: ListBuffer[String]): ListBuffer[String] = {
+    @tailrec def helper(currentIndex: Int, node: TrieNode, items: ListBuffer[String]): ListBuffer[String] = {
       if (currentIndex == prefix.length) {
         items ++ node
       } else {
@@ -54,19 +68,51 @@ class Trie(var word: Option[String] = None) extends Traversable[String] {
     helper(0, this, new ListBuffer[String]())
   }
 
-  def contains(word: String): Boolean =
-    !findByPrefix(word).isEmpty
+  override def contains(word: String): Boolean = {
 
-  def remove(word : String) : Boolean = {
+    @tailrec def helper(currentIndex: Int, node: TrieNode): Boolean = {
+      if (currentIndex == word.length) {
+        node.word.isDefined
+      } else {
+        node.children.get(word.charAt(currentIndex).toLower) match {
+          case Some(child) => helper(currentIndex + 1, child)
+          case None => false
+        }
+      }
+    }
 
-    //def helper(node)
-
-    ???
+    helper(0, this)
   }
 
-  private[trie] def pathTo( word : String ) : Option[ListBuffer[Trie]] = {
+  override def remove(word : String) : Boolean = {
 
-    def helper(buffer : ListBuffer[Trie], currentIndex : Int, node : Trie) : Option[ListBuffer[Trie]] = {
+    pathTo(word) match {
+      case Some(path) => {
+        var index = path.length - 1
+
+        path(index).word = None
+
+        while ( index > 0 ) {
+          val current = path(index)
+          val parent = path(index - 1)
+
+          if (current.children.isEmpty) {
+            parent.children.remove(word.charAt(index - 1).toLower)
+          }
+
+          index -= 1
+        }
+
+        true
+      }
+      case None => false
+    }
+
+  }
+
+  private[trie] def pathTo( word : String ) : Option[ListBuffer[TrieNode]] = {
+
+    def helper(buffer : ListBuffer[TrieNode], currentIndex : Int, node : TrieNode) : Option[ListBuffer[TrieNode]] = {
       if ( currentIndex == word.length && node.word.isDefined ) {
         buffer += node
         Some(buffer)
@@ -81,10 +127,10 @@ class Trie(var word: Option[String] = None) extends Traversable[String] {
       }
     }
 
-    helper(new ListBuffer[Trie](), 0, this)
+    helper(new ListBuffer[TrieNode](), 0, this)
   }
 
-  override def toString() : String = s"Trie(${word})"
+  override def toString() : String = s"Trie(char=${char},word=${word})"
 
 }
 
