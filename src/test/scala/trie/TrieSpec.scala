@@ -107,6 +107,13 @@ class TrieSpec extends Specification {
       trie.remove("Berlin") must beFalse
     }
 
+    "does not remove if it is not a word node" in {
+      val trie = new TrieNode()
+      trie.append("New York")
+
+      trie.remove("New") must beFalse
+    }
+
   }
 
 }

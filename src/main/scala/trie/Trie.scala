@@ -119,9 +119,8 @@ private[trie] class TrieNode(val char : Option[Char] = None, var word: Option[St
   private[trie] def pathTo( word : String ) : Option[ListBuffer[TrieNode]] = {
 
     def helper(buffer : ListBuffer[TrieNode], currentIndex : Int, node : TrieNode) : Option[ListBuffer[TrieNode]] = {
-      if ( currentIndex == word.length && node.word.isDefined ) {
-        buffer += node
-        Some(buffer)
+      if ( currentIndex == word.length) {
+        node.word.map( word => buffer += node )
       } else {
         node.children.get(word.charAt(currentIndex).toLower) match {
           case Some(found) => {
